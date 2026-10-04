@@ -1,0 +1,812 @@
+<!doctype html>
+<html lang="mn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Аравтын бутархайг нэмэх, хасах</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@500;600;700;800&family=Nunito:wght@400;600;700;800;900&family=PT+Mono&display=swap">
+<style>
+:root{
+  --bg:#f2f8ec; --ink:#1d2b1c; --muted:#56664f; --line:#d8e6cf; --card:#ffffff;
+  --leaf:#2f9e44; --leaf-d:#1d6b2c; --leaf-dd:#14501f; --leaf-soft:#e1f3da;
+  --tom:#e03b2b; --tom-d:#a8281b; --tom-soft:#fde2dd;
+  --tag:#ffd43b; --tag-d:#d9a400; --tag-soft:#fff6cc;
+  --car:#f08c00; --paper:#fffdf5;
+  --shadow:0 10px 24px rgba(29,60,25,.16);
+  --hfont:"Rubik","Nunito",system-ui,sans-serif;
+  --mono:"PT Mono","Consolas",monospace;
+  --cw:58px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{color:var(--ink);font-family:"Nunito","Segoe UI",system-ui,sans-serif;font-size:20px;line-height:1.4;overflow:hidden;background-color:var(--bg);
+  background-image:linear-gradient(90deg,rgba(47,158,68,.06) 50%,transparent 50%),linear-gradient(rgba(47,158,68,.06) 50%,transparent 50%);background-size:44px 44px}
+button{font:inherit;cursor:pointer}
+
+/* ===== Header: shop sign + awning ===== */
+.top{position:fixed;inset:0 0 auto 0;height:64px;display:grid;grid-template-columns:auto 1fr auto;align-items:stretch;z-index:20;background:var(--leaf-d);color:#fff}
+.top::after{content:"";position:absolute;left:0;right:0;bottom:-14px;height:14px;
+  background:radial-gradient(circle at 20px 0,var(--tom) 19px,transparent 20px) 0 0/80px 14px repeat-x,radial-gradient(circle at 60px 0,#fff 19px,transparent 20px) 0 0/80px 14px repeat-x}
+.tb{display:flex;align-items:center;gap:10px;padding:0 16px}
+.tb .lbl{font-size:12px;letter-spacing:1px;text-transform:uppercase;color:#bfe6c4;display:block;font-weight:800}
+.tb .val{font-family:var(--hfont);font-weight:700;font-size:20px;white-space:nowrap}
+.tb.mid{min-width:0;overflow:hidden;justify-content:center}
+.tb.mid .val{overflow:hidden;text-overflow:ellipsis;display:block}
+.tks{display:flex;gap:5px}
+.tks span{font-size:13px;font-weight:800;padding:3px 8px;border-radius:20px;background:rgba(255,255,255,.12);color:#cfe9d2;white-space:nowrap}
+.tks span.on{background:var(--tag);color:var(--leaf-dd)}
+.timer{font-family:var(--hfont);font-weight:700;font-size:24px;font-variant-numeric:tabular-nums;color:var(--tag);cursor:pointer}
+.timer.warn{color:#ffa94d}.timer.over{color:#ff8f87}
+.tbtn{border:2px solid rgba(255,255,255,.4);background:transparent;border-radius:8px;padding:3px 10px;font-weight:800;font-size:15px;color:#fff}
+.tbtn:hover{border-color:var(--tag);color:var(--tag)}
+
+/* ===== Slides ===== */
+.deck{position:absolute;inset:84px 0 68px 0;z-index:1}
+.slide{position:absolute;inset:0;overflow:auto;padding:8px clamp(16px,3.5vw,48px) 14px;opacity:0;visibility:hidden;transform:translateY(18px);transition:opacity .35s,transform .35s,visibility .35s}
+.slide.active{opacity:1;visibility:visible;transform:none}
+.inner{max-width:1280px;margin:0 auto}
+h2{font-family:var(--hfont);font-weight:800;font-size:clamp(26px,2.9vw,38px);margin:0 0 4px;color:var(--leaf-dd);display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+h3{font-family:var(--hfont);font-size:21px;margin:0 0 6px;font-weight:700;color:var(--leaf-dd)}
+.sub{color:var(--muted);margin:0 0 10px;font-size:18px;font-weight:600}
+.ptag{display:inline-block;font-family:var(--hfont);font-weight:700;font-size:15px;background:var(--tag);color:var(--leaf-dd);padding:3px 14px 3px 22px;border-radius:4px 14px 14px 4px;position:relative;box-shadow:0 2px 0 var(--tag-d)}
+.ptag::before{content:"";position:absolute;left:8px;top:50%;width:7px;height:7px;margin-top:-3.5px;border-radius:50%;background:var(--bg)}
+.card{background:var(--card);border:2px solid var(--line);box-shadow:var(--shadow);padding:14px 18px;border-radius:14px;position:relative}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.btn{border:none;border-radius:10px;padding:9px 16px;font-weight:800;background:var(--leaf);color:#fff;box-shadow:0 4px 0 var(--leaf-dd);transition:transform .1s,filter .15s}
+.btn:hover{filter:brightness(1.1)}
+.btn:active{transform:translateY(2px);box-shadow:0 2px 0 var(--leaf-dd)}
+.btn[disabled]{opacity:.45;cursor:default}
+.btn.red{background:var(--tom);box-shadow:0 4px 0 var(--tom-d)}
+.btn.yel{background:var(--tag);color:var(--leaf-dd);box-shadow:0 4px 0 var(--tag-d)}
+.btn.ghost{background:#fff;color:var(--ink);border:2px solid var(--line);box-shadow:none}
+.btn.ghost.on{background:var(--tag-soft);border-color:var(--tag-d);color:var(--leaf-dd)}
+.btn.sm{padding:6px 12px;font-size:16px}
+.muted{color:var(--muted)}
+.rule{padding:8px 14px;margin:6px 0;background:var(--tag-soft);border-left:6px solid var(--tag-d);border-radius:0 10px 10px 0;font-weight:700}
+.rule.g{background:var(--leaf-soft);border-color:var(--leaf)}.rule.r{background:var(--tom-soft);border-color:var(--tom)}
+.feedback{font-size:19px;font-weight:800;min-height:27px;margin-top:6px}
+.feedback.ok{color:var(--leaf-d)}.feedback.no{color:var(--tom)}
+input.num{width:110px;font:inherit;font-family:var(--hfont);font-weight:700;font-size:22px;text-align:center;border:2px solid var(--line);border-radius:8px;padding:2px 4px;background:#fff;color:var(--ink)}
+input.num.ok{border-color:var(--leaf);background:var(--leaf-soft)}input.num.no{border-color:var(--tom);background:var(--tom-soft)}
+.shake{animation:shake .35s}
+@keyframes shake{25%{transform:translateX(-7px)}50%{transform:translateX(7px)}75%{transform:translateX(-4px)}}
+
+/* ===== Nav ===== */
+.nav{position:fixed;inset:auto 0 0 0;height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;z-index:20;gap:10px;background:var(--leaf-d);border-top:4px solid var(--tag)}
+.nav .btn{background:#fff;color:var(--leaf-dd);box-shadow:0 4px 0 rgba(0,0,0,.3)}
+.dots{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+.dot{min-width:38px;height:30px;border:2px solid rgba(255,255,255,.45);border-radius:6px 14px 14px 6px;background:transparent;color:#d8eedb;font-family:var(--hfont);font-weight:700;font-size:14px;transition:.2s}
+.dot.on{background:var(--tag);color:var(--leaf-dd);border-color:var(--tag)}
+.dot.done{background:rgba(255,255,255,.16);color:#fff}
+.tnotes{position:fixed;right:16px;bottom:76px;width:min(440px,calc(100vw - 32px));background:var(--paper);border:2px solid var(--tag-d);border-radius:12px;padding:12px 18px;font-size:16px;box-shadow:var(--shadow);z-index:25;display:none;max-height:calc(100vh - 170px);overflow:auto}
+.tnotes.show{display:block}
+.tnotes h4{margin:0 0 6px;font-size:17px}
+.tnotes ul{margin:0;padding-left:20px}
+.tnotes li{margin:3px 0}
+
+/* ===== Intro ===== */
+.intro{min-height:calc(100vh - 175px);display:flex;align-items:center;justify-content:center}
+.store{width:min(960px,100%);background:#fff;border-radius:18px;box-shadow:0 18px 44px rgba(29,60,25,.25);overflow:hidden;border:4px solid var(--leaf-d)}
+.awn{height:58px;background:repeating-linear-gradient(90deg,var(--tom) 0 60px,#fff 60px 120px);position:relative}
+.awn::after{content:"";position:absolute;left:0;right:0;bottom:-22px;height:22px;background:radial-gradient(circle at 30px 0,var(--tom) 29px,transparent 30px) 0 0/120px 22px repeat-x,radial-gradient(circle at 90px 0,#fff 29px,transparent 30px) 0 0/120px 22px repeat-x}
+.store .body{padding:34px 30px 18px;text-align:center;background:linear-gradient(#fff,var(--leaf-soft))}
+.store .school{font-weight:900;font-size:22px;color:var(--leaf-d)}
+.store .subject{font-family:var(--hfont);font-weight:800;font-size:clamp(48px,6.4vw,84px);line-height:1;color:var(--leaf-dd);margin:6px 0}
+.bigtag{display:inline-block;background:var(--tag);color:var(--leaf-dd);font-family:var(--hfont);font-weight:800;font-size:clamp(26px,3.3vw,44px);padding:10px 34px 10px 54px;border-radius:10px 40px 40px 10px;position:relative;box-shadow:0 6px 0 var(--tag-d);transform:rotate(-2deg)}
+.bigtag::before{content:"";position:absolute;left:18px;top:50%;width:18px;height:18px;margin-top:-9px;border-radius:50%;background:#fff;border:3px solid var(--tag-d)}
+.store .produce{font-size:40px;letter-spacing:8px;margin:16px 0 6px}
+.store .teacher{display:inline-block;margin-top:8px;font-weight:900;font-size:24px;background:var(--leaf-d);color:#fff;padding:6px 22px;border-radius:30px}
+
+/* ===== Shop slide ===== */
+.crates{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.crate{background:#c98a4b;border-radius:10px;padding:10px;text-align:center;color:#fff;box-shadow:inset 0 -8px 0 #a86c33,var(--shadow);background-image:repeating-linear-gradient(0deg,transparent 0 22px,rgba(0,0,0,.12) 22px 25px)}
+.crate .em{font-size:52px;line-height:1.1}
+.crate .w{display:inline-block;margin-top:4px;background:var(--tag);color:var(--leaf-dd);font-family:var(--hfont);font-weight:800;font-size:26px;padding:2px 14px;border-radius:8px}
+.roles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px}
+.role{background:var(--leaf-soft);border:2px solid var(--leaf);border-radius:12px;padding:8px;text-align:center;font-weight:800;font-size:17px}
+.role b{display:block;font-size:30px}
+.role .who{display:block;color:var(--tom);font-family:var(--hfont);min-height:24px}
+svg.scale{width:100%;max-height:calc(100vh - 420px);min-height:150px;display:block}
+
+/* ===== Place value board ===== */
+.pv{display:grid;grid-template-columns:70px repeat(2,72px) 30px repeat(3,72px);gap:6px;justify-content:center;align-items:center;background:var(--paper);padding:12px;border-radius:14px;border:2px dashed var(--tag-d)}
+.pv .hd{font-weight:900;font-size:15px;text-align:center;color:var(--leaf-dd);line-height:1.1}
+.pv .hd small{display:block;font-family:var(--hfont);color:var(--tom);font-size:16px}
+.pv .rl{font-size:36px;text-align:center}
+.pcell{height:72px;border:3px dashed #b9cfae;border-radius:12px;display:flex;align-items:center;justify-content:center;font-family:var(--hfont);font-weight:800;font-size:40px;background:#fff;transition:.15s}
+.pcell.off{background:transparent;border-color:transparent}
+.pcell.hot{border-color:var(--tag-d);background:var(--tag-soft)}
+.pcell.r1{border-style:solid;border-color:var(--leaf);color:var(--leaf-d);background:var(--leaf-soft)}
+.pcell.r2{border-style:solid;border-color:var(--tom);color:var(--tom-d);background:var(--tom-soft)}
+.pcell.zero{color:#7a9a70;font-style:italic;border-color:#7a9a70;border-style:dotted}
+.pdot{height:72px;display:flex;align-items:center;justify-content:center;position:relative}
+.pdot::before{content:"";width:16px;height:16px;border-radius:50%;background:var(--tom);box-shadow:0 0 0 4px var(--tom-soft)}
+.pdot.line::after{content:"🔒";position:absolute;top:-6px;font-size:13px}
+.tiles{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;min-height:70px;margin-top:10px;padding:8px;background:#fff;border-radius:12px;border:2px solid var(--line)}
+.tile{width:60px;height:60px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-family:var(--hfont);font-weight:800;font-size:34px;color:#fff;touch-action:none;cursor:grab;user-select:none;box-shadow:0 4px 0 rgba(0,0,0,.25)}
+.tile.r1{background:var(--leaf)}.tile.r2{background:var(--tom)}
+.tile.drag{pointer-events:none;z-index:60;cursor:grabbing;transform:scale(1.12)}
+
+/* ===== Column machine (till) ===== */
+.till{background:#2b3a2a;border-radius:18px;padding:12px 16px;box-shadow:var(--shadow);color:#fff}
+.till .scr{background:#0f1f12;border-radius:10px;padding:10px 12px;display:flex;justify-content:center;border:3px solid #415a3f}
+.cb{display:grid;gap:3px 4px;justify-content:center;align-items:center}
+.cc{height:50px;display:flex;align-items:center;justify-content:center;font-family:var(--hfont);font-weight:800;font-size:36px;color:#c8f7c5;border-radius:8px;position:relative}
+.cc.hp{height:30px;font-size:22px;color:var(--tag)}
+.cc.sg{color:var(--tag)}
+.cc.dg{background:rgba(255,255,255,.05)}
+.cc.cur{background:rgba(255,212,59,.22);outline:2px solid var(--tag)}
+.cc.hp.cur{outline:none;background:transparent}
+.cc.ph{color:#7fd28a;font-style:italic;outline:2px dashed #3f8a4a;outline-offset:-4px}
+.cc.st::after{content:"";position:absolute;left:12%;right:12%;top:50%;height:4px;background:var(--tom);transform:rotate(-30deg);border-radius:2px}
+.cc.res{color:#fff}
+.cc.pt i{width:12px;height:12px;border-radius:50%;background:var(--tom);display:block;box-shadow:0 0 0 3px rgba(224,59,43,.35)}
+.cb .ln{height:4px;background:#c8f7c5;border-radius:2px;margin:2px 0}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+.chip{border:2px solid var(--line);background:#fff;border-radius:20px;padding:4px 12px;font-weight:800;font-size:16px;color:var(--ink)}
+.chip.on{background:var(--tag);border-color:var(--tag-d);color:var(--leaf-dd)}
+.steptxt{background:var(--paper);color:var(--ink);border-radius:10px;padding:8px 12px;margin-top:8px;font-size:18px;font-weight:700;min-height:58px}
+.tillbtns{display:flex;gap:8px;justify-content:center;margin-top:8px;flex-wrap:wrap}
+
+/* ===== Budget ===== */
+.shelf{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.item{background:#fff;border:3px solid var(--line);border-radius:14px;padding:6px 6px 8px;text-align:center;cursor:pointer;transition:.15s;position:relative;user-select:none}
+.item .em{font-size:38px;line-height:1.1}
+.item .nm{font-weight:800;font-size:16px}
+.item .pr{display:inline-block;background:var(--tag);font-family:var(--hfont);font-weight:800;font-size:20px;padding:0 10px;border-radius:6px;color:var(--leaf-dd)}
+.item.in{border-color:var(--leaf);background:var(--leaf-soft);transform:translateY(-3px)}
+.item.in::after{content:"🛒";position:absolute;top:4px;right:8px;font-size:20px}
+.lcd{background:#0f1f12;color:#9df59a;font-family:var(--mono);border-radius:10px;padding:8px 14px;font-size:22px;border:3px solid #415a3f}
+.lcd div{display:flex;justify-content:space-between}
+.lcd .big{font-size:32px;color:var(--tag)}
+.cartlist{font-family:var(--mono);font-size:17px;min-height:60px;max-height:150px;overflow:auto;background:var(--paper);border-radius:8px;padding:6px 10px;margin:8px 0;border:1px dashed var(--tag-d)}
+.cartlist div{display:flex;justify-content:space-between}
+
+/* ===== Estimation ===== */
+.est{display:flex;align-items:center;justify-content:center;gap:14px;font-family:var(--hfont);font-weight:800;font-size:40px;margin:6px 0 10px}
+.est .t{background:var(--tag);color:var(--leaf-dd);padding:4px 18px 4px 30px;border-radius:8px 30px 30px 8px;position:relative;box-shadow:0 4px 0 var(--tag-d)}
+.est .t::before{content:"";position:absolute;left:10px;top:50%;width:10px;height:10px;margin-top:-5px;border-radius:50%;background:#fff}
+.opts{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.opts .btn{min-width:90px;font-size:22px}
+.rcpt{font-family:var(--mono);background:var(--paper);border-radius:6px;padding:8px 12px;margin:6px 0;display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:20px;border:1px solid #eadfb8;box-shadow:0 3px 8px rgba(0,0,0,.06)}
+.rcpt .bt{display:flex;gap:6px}
+.rcpt.ok{background:var(--leaf-soft)}.rcpt.no{background:var(--tom-soft)}
+
+/* ===== Pairs ===== */
+.pairs{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.pc{height:58px;border-radius:12px;border:3px solid var(--line);background:#fff;font-family:var(--hfont);font-weight:800;font-size:26px;color:var(--ink);transition:.15s}
+.pc.sel{border-color:var(--tag-d);background:var(--tag-soft);transform:scale(1.05)}
+.pc.done{color:#fff;border-color:transparent;cursor:default}
+
+/* ===== Receipt exit ===== */
+.receipt{background:var(--paper);font-family:var(--mono);max-width:520px;margin:0 auto;padding:14px 22px 22px;box-shadow:var(--shadow);position:relative;
+  -webkit-mask:radial-gradient(circle at 10px 100%,transparent 9px,#000 10px) 0 0/20px 100% repeat-x;mask:radial-gradient(circle at 10px 100%,transparent 9px,#000 10px) 0 0/20px 100% repeat-x;padding-bottom:28px}
+.receipt h3{font-family:var(--mono);text-align:center;color:var(--ink);margin:0}
+.receipt .dash{border-top:2px dashed #b8ab80;margin:8px 0}
+.receipt .ln{display:flex;justify-content:space-between;align-items:center;font-size:21px;margin:7px 0;gap:8px}
+.receipt input.num{font-family:var(--mono);width:120px;font-size:21px}
+.receipt .mk{width:28px;text-align:center}
+.stamp{position:absolute;right:24px;top:70px;border:5px solid var(--tom);color:var(--tom);font-family:var(--hfont);font-weight:800;font-size:28px;padding:4px 14px;border-radius:10px;transform:rotate(-14deg) scale(1.6);opacity:0;transition:.4s;background:rgba(255,255,255,.6)}
+.stamp.show{opacity:.9;transform:rotate(-14deg) scale(1)}
+.stars3{display:flex;gap:10px;justify-content:center}
+.stars3 button{font-size:38px;border:none;background:none;filter:grayscale(1);opacity:.4;transition:.2s}
+.stars3 button.on{filter:none;opacity:1;transform:scale(1.1)}
+.hw li{margin:6px 0}
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:50}
+
+@media (max-height:900px){
+  body{font-size:18px}
+  :root{--cw:50px}
+  h2{font-size:28px}
+  .sub{font-size:16px;margin-bottom:6px}
+  .card{padding:10px 14px}
+  .cc{height:42px;font-size:30px}.cc.hp{height:24px;font-size:19px}
+  .pcell,.pdot{height:58px}.pcell{font-size:32px}
+  .pv{grid-template-columns:60px repeat(2,60px) 26px repeat(3,60px);padding:8px}
+  .tile{width:52px;height:52px;font-size:28px}
+  .tiles{min-height:62px}
+  .crate .em{font-size:40px}
+  .item .em{font-size:30px}.item .nm{font-size:15px}
+  .steptxt{font-size:17px;min-height:50px;padding:6px 10px}
+  .est{font-size:32px;margin:4px 0 8px}
+  .rcpt{font-size:18px;padding:5px 10px;margin:4px 0}
+  .pc{height:48px;font-size:22px}
+  .receipt .ln{font-size:19px;margin:4px 0}
+  .rule{padding:6px 12px;margin:4px 0}
+  .lcd{font-size:19px}.lcd .big{font-size:26px}
+  .role{font-size:15px;padding:6px}.role b{font-size:24px}
+}
+@media (max-width:1000px){
+  .tks{display:none}
+  .grid2{grid-template-columns:1fr !important}
+  .dots{display:none}
+}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="tb"><span><span class="lbl">Хичээл</span><span class="val">🛒 Математик · 5-р анги</span></span></div>
+  <div class="tb mid"><span style="min-width:0;text-align:center"><span class="lbl">Бяцхан дэлгүүр · <span id="sheetNo">Лангуу 1/10</span></span><span class="val" id="stageName"></span></span></div>
+  <div class="tb">
+    <div class="tks" title="Дэлгүүрийн ажлууд"><span id="tk_pv">🔢 Орон</span><span id="tk_add">➕ Касс</span><span id="tk_sub">➖ Хариулт</span><span id="tk_bud">💰 Төсөв</span></div>
+    <div class="timer" id="timer" title="Хичээлийн үлдсэн хугацаа (2 удаа дарвал 40:00 болно)">⏱ <span id="tval">40:00</span></div>
+    <button class="tbtn" id="tPlay" title="Цаг эхлүүлэх / зогсоох">▶</button>
+    <button class="tbtn" id="notesBtn" title="Багшийн тэмдэглэл (N)">📝</button>
+    <button class="tbtn" id="fsBtn" title="Бүтэн дэлгэц (F)">⛶</button>
+  </div>
+</header>
+
+<main class="deck">
+
+<!-- 1. Intro -->
+<section class="slide" data-name="Танилцуулга" data-min="1"
+  data-notes="Хүүхдүүдтэй мэндэлнэ. Өнөөдөр анги маань «Бяцхан дэлгүүр» болно: зарим нь худалдагч, зарим нь худалдан авагч, кассчин.|Хичээлийн явц: Дэлгүүр нээх → Үнийн шошгоны орон → Касс (нэмэх) → Хариулт мөнгө (хасах) → Төсөв → Тоймлох → Дасгал → Баримт (шалгалт) → Гэрийн даалгавар.|Сурах бичиг 70–72-р тал (335–350-р бодлого). Дээд талын ▶ товчоор 40 минутын цагийг эхлүүлнэ.">
+  <div class="inner intro">
+    <div class="store">
+      <div class="awn"></div>
+      <div class="body">
+        <div class="school">🏫 1-р сургууль</div>
+        <div class="subject">Математик</div>
+        <div class="bigtag">Аравтын бутархайг нэмэх, хасах</div>
+        <div class="produce">🥒🍅🥕🍎🥔🥬🍞</div>
+        <div class="teacher">👩‍🏫 Багш: В. Гэрэлтуяа</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 2. Shop opens -->
+<section class="slide" data-name="Бяцхан дэлгүүр нээгдлээ!" data-min="3"
+  data-notes="Сурах бичиг 70-р тал, 335-р бодлого: Дэлгүүрээс 2.8 кг өргөст хэмх, 1.15 кг улаан лооль авчээ.|🎲 товчоор эгнээ бүрт үүрэг сугална (худалдагч, худалдан авагч, кассчин). Хичээлийн турш үүргээ солино.|Асуулт: Аль нь хүнд вэ? Олон хүүхэд «1.15-д цифр олон тул их» гэж андуурдаг. Бүхэл хэсгийг эхэлж харьцуулна: 2 &gt; 1 → 2.8 их.|Хариу: а) нийт 3.95 кг; б) 2.8 − 1.15 = 1.65 кг (дараагийн лангуунд бодно).">
+  <div class="inner">
+    <span class="ptag">Лангуу 1</span>
+    <h2>🛒 Бяцхан дэлгүүр нээгдлээ!</h2>
+    <p class="sub">Худалдан авагч дэлгүүрээс хоёр төрлийн ногоо жинлүүлж авлаа (70-р тал).</p>
+    <div class="grid2" style="grid-template-columns:1fr 1fr;align-items:start">
+      <div>
+        <div class="crates">
+          <div class="crate"><div class="em">🥒🥒🥒</div><b>Өргөст хэмх</b><br><span class="w">2.8 кг</span></div>
+          <div class="crate"><div class="em">🍅🍅🍅</div><b>Улаан лооль</b><br><span class="w">1.15 кг</span></div>
+        </div>
+        <div class="card" style="margin-top:12px">
+          <h3>🧺 Худалдан авагчийн асуулт</h3>
+          <div class="rule">а. Нийт хэдэн килограмм болсон бэ?</div>
+          <div class="rule r">б. Аль нь нөгөөгөөсөө хэдэн килограммаар их вэ?</div>
+        </div>
+        <div class="roles">
+          <div class="role"><b>👩‍🌾</b>Худалдагч<span class="who" id="ro0">—</span></div>
+          <div class="role"><b>🛒</b>Худалдан авагч<span class="who" id="ro1">—</span></div>
+          <div class="role"><b>🧾</b>Кассчин<span class="who" id="ro2">—</span></div>
+        </div>
+        <div class="row" style="justify-content:center;margin-top:8px"><button class="btn yel sm" id="roleBtn">🎲 Үүрэг сугалах</button></div>
+      </div>
+      <div class="card">
+        <h3>⚖️ Эхлээд жинлэе: аль нь хүнд вэ?</h3>
+        <svg class="scale" viewBox="0 0 400 210" id="scaleSvg">
+          <rect x="185" y="70" width="30" height="120" rx="6" fill="#c98a4b"/>
+          <rect x="130" y="186" width="140" height="16" rx="8" fill="#a86c33"/>
+          <g id="beam">
+            <rect x="40" y="62" width="320" height="12" rx="6" fill="#1d6b2c"/>
+            <circle cx="200" cy="68" r="12" fill="#ffd43b" stroke="#d9a400" stroke-width="3"/>
+            <g id="panL"><line x1="70" y1="68" x2="45" y2="130" stroke="#56664f" stroke-width="3"/><line x1="70" y1="68" x2="95" y2="130" stroke="#56664f" stroke-width="3"/><path d="M30 130 H110 Q70 160 30 130Z" fill="#e1f3da" stroke="#2f9e44" stroke-width="3"/><text x="70" y="124" text-anchor="middle" font-size="30">🥒</text></g>
+            <g id="panR"><line x1="330" y1="68" x2="305" y2="130" stroke="#56664f" stroke-width="3"/><line x1="330" y1="68" x2="355" y2="130" stroke="#56664f" stroke-width="3"/><path d="M290 130 H370 Q330 160 290 130Z" fill="#fde2dd" stroke="#e03b2b" stroke-width="3"/><text x="330" y="124" text-anchor="middle" font-size="30">🍅</text></g>
+          </g>
+        </svg>
+        <div class="row" style="justify-content:center">
+          <button class="btn sm" id="hvL">🥒 2.8 кг хүнд</button>
+          <button class="btn red sm" id="hvR">🍅 1.15 кг хүнд</button>
+        </div>
+        <div class="feedback" id="hvFb" style="text-align:center"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 3. Place value -->
+<section class="slide" data-name="Үнийн шошгоны орон" data-min="5"
+  data-notes="Цифрийн хавтанг чирж зөв оронд нь тавина. Улаан цэгүүд түгжээтэй — бүх тооны цэг нэг шулуун дээр!|Анхаар: 2.8-ийн 8 бол аравны нэгийн орон, 1.15-ийн 5 бол зууны нэгийн орон.|«0 нөхөх» товч: 2.8 = 2.80. Сурах бичиг 70-р тал: «бутархай хэсгийн орны тоог тэнцүүлж 0 гүйцээн бичдэг».|⭐ сурагч: эхний 2 сагс. ⭐⭐⭐ сурагч: 12.4 ба 3.75, 3.455 ба 0.55 (337и).">
+  <div class="inner">
+    <span class="ptag">Лангуу 2</span>
+    <h2>🔢 Цифрүүдийг оронд нь өрье</h2>
+    <p class="sub">Цифрийг чирж зөв нүдэнд тавь. Цэгүүд 🔒 түгжээтэй — <b>цэгийн доор цэг</b>! Хоосон үлдсэн нүдийг <b>0</b>-ээр нөхнө.</p>
+    <div class="grid2" style="grid-template-columns:1.25fr .75fr;align-items:start">
+      <div>
+        <div class="pv" id="pvBoard"></div>
+        <div class="tiles" id="pvTiles"></div>
+      </div>
+      <div class="card">
+        <h3>🧺 Сагс <span id="pvNo">1/5</span></h3>
+        <div style="font-family:var(--hfont);font-weight:800;font-size:28px"><span style="color:var(--leaf-d)" id="pvA">2.8</span> ба <span style="color:var(--tom)" id="pvB">1.15</span></div>
+        <div class="row" style="margin-top:8px">
+          <button class="btn yel" id="pvZero">0 нөхөх</button>
+          <button class="btn ghost sm" id="pvNext">Дараагийн сагс ▶</button>
+        </div>
+        <div class="feedback" id="pvFb"></div>
+        <div class="rule g" style="font-size:17px">Бүхэл хэсэг нь цэгийн <b>зүүн</b> талд, бутархай хэсэг нь <b>баруун</b> талд. 2.8 = 2.80 — утга нь өөрчлөгдөхгүй!</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 4. Cashier add -->
+<section class="slide" data-name="Касс: сагсны нийлбэр" data-min="6"
+  data-notes="Номын бодолт (70-р тал): 2.8 + 1.15 = 2 80/100 + 1 15/100 = 3 95/100 = 3.95 кг. Баганаар: 2.80 + 1.15 = 3.95.|Эхлээд «Чи бод!» хэсэгт хүүхдүүд дэвтэр дээрээ бодоод хариугаа оруулна, дараа нь ▶ товчоор алхам алхмаар шалгана.|Хариунууд (337): а 3.7+5.3 = 9; ж 4.5+0.32 = 4.82; з 8.31+1.6 = 9.91; и 3.455+0.55 = 4.005.|Цэгийн доор цэг, баруунаас зүүн тийш нэмнэ. 10-аас давбал 1-ийг дараагийн оронд шилжүүлнэ. 🎲 = санамсаргүй сагс.">
+  <div class="inner">
+    <span class="ptag">Лангуу 3</span>
+    <h2>➕ Кассчин сагсны жинг нэмнэ</h2>
+    <div class="chips" id="addChips">
+      <button class="chip on" data-a="2.8" data-b="1.15">🥒+🍅 2.8 + 1.15</button>
+      <button class="chip" data-a="3.7" data-b="5.3">337а 3.7 + 5.3</button>
+      <button class="chip" data-a="4.5" data-b="0.32">337ж 4.5 + 0.32</button>
+      <button class="chip" data-a="8.31" data-b="1.6">337з 8.31 + 1.6</button>
+      <button class="chip" data-a="3.455" data-b="0.55">⭐⭐⭐ 3.455 + 0.55</button>
+      <button class="chip" data-r="1">🎲 Шинэ сагс</button>
+    </div>
+    <div class="grid2" style="grid-template-columns:1.2fr .8fr;align-items:start">
+      <div class="till">
+        <div class="scr" id="addBoard"></div>
+        <div class="steptxt" id="addTxt"></div>
+        <div class="tillbtns">
+          <button class="btn yel sm" id="addNext">▶ Дараагийн орон</button>
+          <button class="btn sm" id="addAll">⏩ Бүгдийг</button>
+          <button class="btn ghost sm" id="addReset">↺ Дахин</button>
+        </div>
+      </div>
+      <div class="card">
+        <h3>🧾 Чи бод!</h3>
+        <p style="margin:0 0 6px">Дэвтэртээ баганаар бодоод хариугаа бич:</p>
+        <div class="row"><b id="addQ" style="font-family:var(--hfont);font-size:24px"></b> = <input class="num" id="addIn" inputmode="decimal" placeholder="?"> <button class="btn sm" id="addChk">✓</button></div>
+        <div class="feedback" id="addFb"></div>
+        <div class="rule" style="font-size:17px">1️⃣ Цэгийн доор цэг<br>2️⃣ Хоосон оронд 0 нөхнө<br>3️⃣ Баруунаас зүүн тийш нэмнэ<br>4️⃣ Хариунд цэгээ буулгана</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 5. Change: subtraction -->
+<section class="slide" data-name="Хариулт мөнгө: хасах" data-min="6"
+  data-notes="Номын б асуулт: 2.8 − 1.15 = 2.80 − 1.15 = 1.65 кг (өргөст хэмх 1.65 кг-аар их). Анхаар: pdf текстэд 1.75 гэж гарсан нь буруу уншигдсан байх магадлалтай — зөв хариу 1.65.|Үнийг «мянган төгрөг»-өөр бичив: 2.35 мян.₮ = 2 350₮. 5 мян.₮ өгөөд 2.35 мян.₮-ийн бараа авбал хариулт = 5.00 − 2.35 = 2.65 мян.₮.|Хасах тоо том бол зүүн талаас 1 зээлнэ (10 болно). 0-ээс зээлэх үед 0 нь 9 болно — улаан зураасаар харагдана.|Хариу (337): е 1 − 0.4 = 0.6; м 1 − 0.22 = 0.78; к 5.8 − 2.15 = 3.65; л 6.32 − 4.9 = 1.42.">
+  <div class="inner">
+    <span class="ptag">Лангуу 4</span>
+    <h2>➖ Хариулт мөнгө ба жингийн зөрүү</h2>
+    <div class="chips" id="subChips">
+      <button class="chip on" data-a="2.8" data-b="1.15">🥒−🍅 2.8 − 1.15</button>
+      <button class="chip" data-a="5" data-b="2.35">💵 5 − 2.35 мян.₮</button>
+      <button class="chip" data-a="1" data-b="0.4">337е 1 − 0.4</button>
+      <button class="chip" data-a="1" data-b="0.22">337м 1 − 0.22</button>
+      <button class="chip" data-a="5.8" data-b="2.15">337к 5.8 − 2.15</button>
+      <button class="chip" data-a="6.32" data-b="4.9">337л 6.32 − 4.9</button>
+      <button class="chip" data-r="1">🎲 Шинэ</button>
+    </div>
+    <div class="grid2" style="grid-template-columns:1.2fr .8fr;align-items:start">
+      <div class="till">
+        <div class="scr" id="subBoard"></div>
+        <div class="steptxt" id="subTxt"></div>
+        <div class="tillbtns">
+          <button class="btn yel sm" id="subNext">▶ Дараагийн орон</button>
+          <button class="btn sm" id="subAll">⏩ Бүгдийг</button>
+          <button class="btn ghost sm" id="subReset">↺ Дахин</button>
+        </div>
+      </div>
+      <div class="card">
+        <h3>💵 Кассчин чи!</h3>
+        <p style="margin:0 0 6px" id="subStory">Хэмх улаан лоолиос хэдэн кг-аар их вэ?</p>
+        <div class="row"><b id="subQ" style="font-family:var(--hfont);font-size:24px"></b> = <input class="num" id="subIn" inputmode="decimal" placeholder="?"> <button class="btn sm" id="subChk">✓</button></div>
+        <div class="feedback" id="subFb"></div>
+        <div class="rule r" style="font-size:17px">⭐ Зөвлөгөө: 5 = 5.00, 1 = 1.0 гэж <b>0 нөхөж</b> бич. Хасагдах тоо бага бол зүүн хөршөөсөө <b>1 зээлнэ</b>.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 6. Budget -->
+<section class="slide" data-name="Төсвийн сорил" data-min="5"
+  data-notes="Үнэ мянган төгрөгөөр (1.25 = 1 250₮). Бараан дээр дарж сагсанд нэмнэ/хасна.|⭐ түвшин: 5 мян.₮ төсөв, ≥3 бараа, нийлбэр харагдана. Жишээ: 1.25 + 0.85 + 1.7 = 3.80 → хариулт 1.20.|⭐⭐⭐ түвшин: 10 мян.₮, ≥4 бараа, нийлбэр 9.50–10.00 хооронд; нийлбэр нууцлагдсан — хүүхэд өөрөө бодож оруулна. Жишээ: 3.6 + 2.4 + 2.95 + 0.85 = 9.80, хариулт 0.20.|Хосоор: нэг нь худалдан авагч (сонгоно), нөгөө нь кассчин (бодно).">
+  <div class="inner">
+    <span class="ptag">Лангуу 5</span>
+    <h2>💰 Төсвөө хэтрүүлэлгүй дэлгүүрлэе</h2>
+    <div class="grid2" style="grid-template-columns:1.15fr .85fr;align-items:start">
+      <div>
+        <div class="row" style="margin-bottom:8px">
+          <button class="btn ghost sm on" id="bLv1">⭐ Төсөв 5 мян.₮</button>
+          <button class="btn ghost sm" id="bLv3">⭐⭐⭐ Төсөв 10 мян.₮</button>
+          <span class="muted" style="font-size:16px" id="bRule"></span>
+        </div>
+        <div class="shelf" id="shelf"></div>
+      </div>
+      <div class="card">
+        <h3>🧾 Касс</h3>
+        <div class="lcd">
+          <div><span>ТӨСӨВ</span><span id="bBud">5.00</span></div>
+          <div class="big"><span>НИЙТ</span><span id="bTot">0.00</span></div>
+          <div><span>ҮЛДЭГДЭЛ</span><span id="bRem">5.00</span></div>
+        </div>
+        <div class="cartlist" id="cartList"></div>
+        <div class="row" id="bHard" style="display:none">Нийт = <input class="num" id="bTotIn" inputmode="decimal" placeholder="?"> Хариулт = <input class="num" id="bRemIn" inputmode="decimal" placeholder="?"></div>
+        <div class="row" style="margin-top:6px"><button class="btn red sm" id="bPay">💳 Төлөх</button><button class="btn ghost sm" id="bClr">🗑 Сагс хоослох</button></div>
+        <div class="feedback" id="bFb"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 7. Estimate -->
+<section class="slide" data-name="Эхлээд тоймло, дараа нь бод" data-min="4"
+  data-notes="Тоймлох: бутархай бүрийг хамгийн ойрын бүхэл тоо руу дугуйлна (2.8 ≈ 3, 1.15 ≈ 1 → 3 + 1 ≈ 4). Тоймлолт нь хариу «үнэмшилтэй эсэх»-ийг шалгадаг.|Зүүн тал: 1) тоймлолтыг сонгоно, 2) яг хариуг бичнэ. ⭐ = аравны нэг, ⭐⭐⭐ = зууны/мянганы нэг.|Баруун тал: касс алдсан уу? 2.8 + 1.15 = 1.43 ✗ (цэгийг харалдаа тавиагүй, ≈4 байх ёстой); 4.5 + 0.32 = 4.82 ✓; 9.8 − 3.6 = 6.2 ✓ (337г); 3.7 + 5.3 = 8.1 ✗ (= 9).">
+  <div class="inner">
+    <span class="ptag">Лангуу 6</span>
+    <h2>🤔 Эхлээд тоймло, дараа нь бод</h2>
+    <div class="grid2" style="grid-template-columns:1.1fr .9fr;align-items:start">
+      <div class="card">
+        <div class="row" style="justify-content:space-between">
+          <div class="row"><button class="btn ghost sm on" id="eLv1">⭐</button><button class="btn ghost sm" id="eLv3">⭐⭐⭐</button></div>
+          <span style="font-weight:900">Оноо: <span id="eScore">0</span> 🍎</span>
+        </div>
+        <div class="est" id="eQ"></div>
+        <div style="text-align:center;font-weight:800">1️⃣ Ойролцоогоор хэд вэ? (бүхэл тоо руу дугуйл)</div>
+        <div class="opts" id="eOpts" style="margin:6px 0"></div>
+        <div style="text-align:center;font-weight:800;margin-top:6px">2️⃣ Яг хариу: <input class="num" id="eIn" inputmode="decimal" placeholder="?" disabled> <button class="btn sm" id="eChk" disabled>✓</button> <button class="btn ghost sm" id="eNew">🎲 Шинэ</button></div>
+        <div class="feedback" id="eFb" style="text-align:center"></div>
+      </div>
+      <div class="card">
+        <h3>🧾 Касс алдсан уу?</h3>
+        <p style="margin:0 0 4px;font-size:17px">Тоймлоод шалга: зөв бол ✓, буруу бол ✗.</p>
+        <div id="chkList"></div>
+        <div class="feedback" id="chkFb"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 8. Practice -->
+<section class="slide" data-name="Дасгал: хос олох" data-min="4"
+  data-notes="336-р бодлого (70-р тал): хүснэгтээс нийлбэр нь б) 10, а) 1 байх хос тоог олно. Хоёр нүд дараалан дарна.|⭐ (нийлбэр 10): 7.5+2.5, 4.1+5.9, 4.7+5.3, 8.5+1.5, 2.4+7.6, 1.1+8.9, 7.8+2.2, 3.3+6.7.|⭐⭐⭐ (нийлбэр 1): 0.13+0.87, 0.36+0.64, 0.05+0.95, 0.09+0.91, 0.15+0.85, 0.44+0.56, 0.31+0.69, 0.22+0.78.|341-р бодлого (71-р тал): 10 өдрийн нийт = 29.82 км; хамгийн хол 4.2, хамгийн ойр 1.87 → зөрүү 2.33 км.">
+  <div class="inner">
+    <span class="ptag">Лангуу 7</span>
+    <h2>🍎 Хос үнийн шошго ол</h2>
+    <div class="grid2" style="grid-template-columns:1fr 1fr;align-items:start">
+      <div class="card">
+        <div class="row" style="justify-content:space-between;margin-bottom:8px">
+          <div class="row"><button class="btn ghost sm on" id="pLv1">⭐ Нийлбэр = 10</button><button class="btn ghost sm" id="pLv3">⭐⭐⭐ Нийлбэр = 1</button></div>
+          <b><span id="pCnt">0</span>/8</b>
+        </div>
+        <div class="pairs" id="pairs"></div>
+        <div class="feedback" id="pFb"></div>
+      </div>
+      <div class="card">
+        <h3>🏃 ⭐⭐⭐ Гүйлтийн бодлого (341)</h3>
+        <p style="margin:0 0 6px;font-size:17px">Хүү 10 өдөр гүйжээ (км):</p>
+        <div style="font-family:var(--mono);font-size:18px;background:var(--paper);padding:6px 10px;border-radius:8px;border:1px dashed var(--tag-d)">2.5 · 1.87 · 4.2 · 3.18 · 2.42 · 1.9 · 3.8 · 3 · 4 · 2.95</div>
+        <div class="row" style="margin-top:8px">а. Нийт хэдэн км? <input class="num" id="rTot" inputmode="decimal" placeholder="?"> км</div>
+        <div class="row" style="margin-top:6px">б. Хамгийн хол ба ойрын зөрүү? <input class="num" id="rDif" inputmode="decimal" placeholder="?"> км</div>
+        <div class="row" style="margin-top:6px"><button class="btn sm" id="rChk">✓ Шалгах</button><button class="btn ghost sm" id="rHint">💡 Зөвлөгөө</button></div>
+        <div class="feedback" id="rFb"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 9. Receipt exit check -->
+<section class="slide" data-name="Баримт: гарах шалгалт" data-min="4"
+  data-notes="Гарах шалгалт — 339-р бодлогоос (71-р тал). Хүүхэд бүр дэвтэртээ бодоод хариугаа хэлнэ; багш оруулна.|Хариу: а 5.6 + 7.8 + 1.7 = 15.1; д 1.5 − 0.7 = 0.8; в 6.008 + 1.883 = 7.891; з 16.1 − 7.34 = 8.76.|4/4 зөв бол «ТӨЛӨГДСӨН» тамга дарагдана. Төгсгөлд одоор өөрийгөө үнэлнэ.">
+  <div class="inner">
+    <span class="ptag">Лангуу 8</span>
+    <h2>🧾 Баримтаа шалга</h2>
+    <div class="grid2" style="grid-template-columns:1.1fr .9fr;align-items:start">
+      <div class="receipt" id="receipt">
+        <h3>БЯЦХАН ДЭЛГҮҮР</h3>
+        <div style="text-align:center;font-size:15px">5-р анги · Касс №1 · 339-р бодлого</div>
+        <div class="dash"></div>
+        <div class="ln"><span>а. 5.6 + 7.8 + 1.7</span><span><input class="num" data-ex="15.1" inputmode="decimal" placeholder="?"><span class="mk"></span></span></div>
+        <div class="ln"><span>д. 1.5 − 0.7</span><span><input class="num" data-ex="0.8" inputmode="decimal" placeholder="?"><span class="mk"></span></span></div>
+        <div class="ln"><span>в. 6.008 + 1.883</span><span><input class="num" data-ex="7.891" inputmode="decimal" placeholder="?"><span class="mk"></span></span></div>
+        <div class="ln"><span>з. 16.1 − 7.34</span><span><input class="num" data-ex="8.76" inputmode="decimal" placeholder="?"><span class="mk"></span></span></div>
+        <div class="dash"></div>
+        <div class="ln"><b>ЗӨВ:</b><b id="exScore">0 / 4</b></div>
+        <div style="text-align:center;margin-top:6px"><button class="btn red" id="exChk">🧾 Шалгах</button></div>
+        <div class="stamp" id="stamp">ТӨЛӨГДСӨН ✓</div>
+      </div>
+      <div class="card">
+        <h3>⭐ Өнөөдөр би...</h3>
+        <ul style="margin:0 0 8px;padding-left:22px;font-size:18px">
+          <li>цэгийг цэгийн доор бичиж чадна</li>
+          <li>хоосон оронд 0 нөхөж чадна</li>
+          <li>шилжүүлж нэмж, зээлж хасаж чадна</li>
+          <li>хариугаа тоймлож шалгаж чадна</li>
+        </ul>
+        <div class="stars3" id="stars3"><button>⭐</button><button>⭐</button><button>⭐</button></div>
+        <p class="muted" style="text-align:center;font-size:16px;margin:4px 0 0">1 од — тусламж хэрэгтэй · 2 од — ихэнхийг · 3 од — бүгдийг чадна</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 10. Homework -->
+<section class="slide" data-name="Гэрийн даалгавар" data-min="2"
+  data-notes="Гэрийн даалгавар 71–72-р талаас. ⭐: 339 б, г, ж. ⭐⭐⭐: 339 е, и; 349.|Хариу (багшид): 339б 82.27; г 106.557; ж 1.455; е 4.12 − 2.162 = 1.958; и 11.448 + 4.552 = 16. 349: өргөн 25.5 − 13.2 = 12.3 м, хашаа (25.5 + 12.3) × 2 = 75.6 м.|Дэлгүүр хаах: «Өнөөдөр юу сурсан бэ?» гэж 2–3 хүүхдээс асууна.">
+  <div class="inner">
+    <span class="ptag">Лангуу 9</span>
+    <h2>🏠 Гэрийн даалгавар · Дэлгүүр хаагдлаа</h2>
+    <div class="grid2" style="grid-template-columns:1fr 1fr;align-items:start">
+      <div class="card">
+        <h3>📒 Сурах бичиг 71–72-р тал</h3>
+        <ul class="hw" style="padding-left:22px;margin:0">
+          <li><b>⭐ 339</b> б, г, ж — илэрхийллийн утгыг ол.</li>
+          <li><b>⭐⭐⭐ 339</b> е, и — хаалттай илэрхийлэл.</li>
+          <li><b>⭐⭐⭐ 349</b> — ногооны талбайн урт 25.5 м, өргөн нь 13.2 м-ээр богино. Хашааны урт?</li>
+          <li>🛒 Гэртээ: дэлгүүрийн баримтаас 2 барааны үнийг нэмж, 10 000₮-өөс хас (мянган ₮-өөр бич).</li>
+        </ul>
+      </div>
+      <div class="card" style="background:var(--leaf-soft)">
+        <h3>🧠 Санаж явъя</h3>
+        <div class="rule">Аравтын бутархайг нэмж, хасахдаа <b>бүхлийн цэгүүдийг харалдаа</b> байхаар орон харгалзуулан бичнэ.</div>
+        <div class="rule g">Бутархай хэсгийн орны тоог тэнцүүлж <b>0 гүйцээн</b> бичнэ: 2.8 = 2.80.</div>
+        <div class="rule r">Хариугаа <b>тоймлож</b> шалга: 2.8 + 1.15 ≈ 3 + 1 = 4 → 3.95 ✓</div>
+        <div style="text-align:center;font-size:40px;margin-top:6px">🛒🥒🍅🍎 Баярлалаа!</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<nav class="nav">
+  <button class="btn" id="prevBtn">◀ Өмнөх</button>
+  <div class="dots" id="dots"></div>
+  <button class="btn" id="nextBtn">Дараах ▶</button>
+</nav>
+<div class="tnotes" id="tnotes"><h4>📝 Багшид зориулсан зөвлөмж</h4><ul id="tnList"></ul></div>
+<canvas id="confetti"></canvas>
+
+<script>
+/* ---------- Helpers ---------- */
+const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+const $=id=>document.getElementById(id);
+const rnd=(a,b)=>a+Math.random()*(b-a);
+const rint=(a,b)=>Math.floor(a+Math.random()*(b-a+1));
+const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const numOf=s=>{const v=parseFloat(String(s).replace(',','.').replace(/\s/g,''));return isNaN(v)?null:v};
+const numEq=(s,ans)=>{const v=numOf(s);return v!==null&&Math.abs(v-Number(ans))<1e-9};
+const fb=(id,cls,t)=>{const f=$(id);f.className='feedback'+(cls?' '+cls:'');f.innerHTML=t};
+const f2=u=>(u/100).toFixed(2);
+
+/* ---------- Tracker ---------- */
+const TR={pv:0,add:0,sub:0,bud:0};
+function mark(k){if(TR[k])return;TR[k]=1;$('tk_'+k).classList.add('on');confetti(60)}
+
+/* ---------- Slides ---------- */
+const slides=[...document.querySelectorAll('.slide')];const dots=$('dots');let cur=0;
+slides.forEach((s,i)=>{const b=document.createElement('button');b.className='dot';b.textContent=String(i+1).padStart(2,'0');b.title=s.dataset.name;b.onclick=()=>go(i);dots.appendChild(b)});
+function go(i){
+  cur=Math.max(0,Math.min(slides.length-1,i));
+  slides.forEach((s,j)=>s.classList.toggle('active',j===cur));
+  [...dots.children].forEach((d,j)=>{d.classList.toggle('on',j===cur);d.classList.toggle('done',j<cur)});
+  const s=slides[cur];
+  $('stageName').textContent=s.dataset.name;$('sheetNo').textContent='Лангуу '+(cur+1)+'/'+slides.length;
+  $('tnList').innerHTML='<li>⏱ Зөвлөмж хугацаа: ≈'+s.dataset.min+' мин</li>'+s.dataset.notes.split('|').map(t=>'<li>'+t+'</li>').join('');
+  $('prevBtn').disabled=cur===0;$('nextBtn').textContent=cur===slides.length-1?'🏁 Төгсгөл':'Дараах ▶';
+}
+$('prevBtn').onclick=()=>go(cur-1);$('nextBtn').onclick=()=>{if(cur===slides.length-1)confetti(120);go(cur+1)};
+document.addEventListener('keydown',e=>{
+  const t=e.target;if(t&&(t.isContentEditable||t.tagName==='INPUT'||t.tagName==='TEXTAREA'))return;
+  if(e.key==='ArrowRight'||e.key==='PageDown')go(cur+1);
+  else if(e.key==='ArrowLeft'||e.key==='PageUp')go(cur-1);
+  else if(e.key==='f'||e.key==='F')toggleFS();
+  else if(e.key==='n'||e.key==='N')toggleNotes();
+});
+function toggleFS(){if(!document.fullscreenElement){if(document.documentElement.requestFullscreen)document.documentElement.requestFullscreen()}else if(document.exitFullscreen)document.exitFullscreen()}
+function toggleNotes(){$('tnotes').classList.toggle('show')}
+$('fsBtn').onclick=toggleFS;$('notesBtn').onclick=toggleNotes;
+
+/* ---------- Timer ---------- */
+let remain=40*60,running=false,tick=null;
+function drawT(){const a=Math.abs(remain),m=Math.floor(a/60),s=a%60;$('tval').textContent=(remain<0?'+':'')+m+':'+String(s).padStart(2,'0');$('timer').className='timer'+(remain<0?' over':remain<=300?' warn':'')}
+$('tPlay').onclick=()=>{running=!running;$('tPlay').textContent=running?'⏸':'▶';if(running)tick=setInterval(()=>{remain--;drawT()},1000);else clearInterval(tick)};
+$('timer').ondblclick=()=>{remain=40*60;drawT()};drawT();
+
+/* ================= Slide 2: shop ================= */
+$('roleBtn').onclick=()=>{const r=shuffle(['1-р эгнээ','2-р эгнээ','3-р эгнээ']);r.forEach((t,i)=>$('ro'+i).textContent=t)};
+function tilt(deg){const b=$('beam');b.style.transition='transform .8s cubic-bezier(.3,1.6,.5,1)';b.style.transformOrigin='200px 68px';b.style.transform=`rotate(${deg}deg)`;
+  ['panL','panR'].forEach(p=>{const g=$(p);g.style.transition='transform .8s cubic-bezier(.3,1.6,.5,1)';g.style.transformOrigin=(p==='panL'?'70px':'330px')+' 68px';g.style.transform=`rotate(${-deg}deg)`})}
+$('hvL').onclick=()=>{tilt(-12);fb('hvFb','ok','🎉 Зөв! Бүхэл хэсгийг эхэлж харьцуулна: <b>2 &gt; 1</b>, тиймээс 2.8 &gt; 1.15.');confetti(40)};
+$('hvR').onclick=()=>{tilt(0);$('scaleSvg').classList.remove('shake');void $('scaleSvg').offsetWidth;$('scaleSvg').classList.add('shake');fb('hvFb','no','🤔 1.15-д цифр олон ч бүхэл хэсэг нь 1. 2.8-ийн бүхэл хэсэг 2. Аль нь их вэ?')};
+
+/* ================= Slide 3: place value drag ================= */
+const PV=[['2.8','1.15'],['4.5','0.32'],['12.4','3.75'],['3.455','0.55'],['8.31','1.6']];
+const COLS=['T','O','pt','t','h','th'],CNAME={T:'аравтын',O:'нэгжийн',t:'аравны нэгийн',h:'зууны нэгийн',th:'мянганы нэгийн'};
+let pvI=0,pvExp=null,pvZeroDone=false;
+function pvExpect(s,d){const [i,f='']=s.split('.');const e={};if(i.length===2){e.T=i[0];e.O=i[1]}else e.O=i[0];
+  ['t','h','th'].forEach((k,j)=>{if(j<f.length)e[k]=f[j];else if(j<d)e[k]='z'});return e}
+function pvLoad(){const [A,B]=PV[pvI];const d=Math.max((A.split('.')[1]||'').length,(B.split('.')[1]||'').length);
+  pvExp=[pvExpect(A,d),pvExpect(B,d)];pvZeroDone=false;$('pvA').textContent=A;$('pvB').textContent=B;$('pvNo').textContent=(pvI+1)+'/'+PV.length;fb('pvFb','','');
+  const bd=$('pvBoard');let h='<div></div><div class="hd">Аравт<small>10</small></div><div class="hd">Нэгж<small>1</small></div><div class="hd">•</div><div class="hd">Аравны<br>нэг<small>0.1</small></div><div class="hd">Зууны<br>нэг<small>0.01</small></div><div class="hd">Мянганы<br>нэг<small>0.001</small></div>';
+  pvExp.forEach((e,r)=>{h+=`<div class="rl">${r?'🍅':'🥒'}</div>`;COLS.forEach(k=>{if(k==='pt'){h+='<div class="pdot line"></div>';return}
+    const x=e[k];h+=`<div class="pcell${x==null?' off':''}" data-r="${r}" data-k="${k}" data-x="${x==null?'':x}"></div>`})});
+  bd.innerHTML=h;
+  const tl=[];pvExp.forEach((e,r)=>Object.values(e).forEach(x=>{if(x!=='z')tl.push([x,r])}));
+  $('pvTiles').innerHTML='';shuffle(tl).forEach(([x,r])=>{const t=document.createElement('div');t.className='tile r'+(r+1);t.textContent=x;t.dataset.r=r;t.dataset.x=x;dragify(t);$('pvTiles').appendChild(t)})}
+function pvCheckDone(){const empty=[...document.querySelectorAll('#pvBoard .pcell:not(.off)')].filter(c=>!c.textContent);
+  if(empty.length===0){fb('pvFb','ok',`🎉 Гайхалтай! ${$('pvA').textContent} ба ${$('pvB').textContent} — цэгүүд харалдаа, бутархай орон тэнцүү боллоо.`);mark('pv')}
+  else if(!document.querySelectorAll('#pvTiles .tile').length&&!pvZeroDone)fb('pvFb','','👉 Бүх цифр байрандаа! Одоо хоосон нүдийг <b>0 нөхөх</b> товчоор нөхөөрэй.')}
+let hot=null;
+function dragify(t){
+  t.addEventListener('pointerdown',e=>{e.preventDefault();const r=t.getBoundingClientRect();const ox=e.clientX-r.left,oy=e.clientY-r.top;
+    t.setPointerCapture(e.pointerId);t.classList.add('drag');Object.assign(t.style,{position:'fixed',left:r.left+'px',top:r.top+'px'});
+    const mv=ev=>{t.style.left=(ev.clientX-ox)+'px';t.style.top=(ev.clientY-oy)+'px';const c=cellAt(ev);if(hot&&hot!==c)hot.classList.remove('hot');hot=c;if(c)c.classList.add('hot')};
+    const up=ev=>{t.removeEventListener('pointermove',mv);t.removeEventListener('pointerup',up);t.removeEventListener('pointercancel',up);if(hot)hot.classList.remove('hot');hot=null;
+      const c=cellAt(ev);t.classList.remove('drag');Object.assign(t.style,{position:'',left:'',top:''});
+      if(!c)return;
+      if(c.dataset.r===t.dataset.r&&c.dataset.x===t.dataset.x){c.textContent=t.dataset.x;c.classList.add('r'+(+t.dataset.r+1));t.remove();fb('pvFb','ok','✓ Зөв орон!');pvCheckDone()}
+      else{t.classList.remove('shake');void t.offsetWidth;t.classList.add('shake');
+        const right=[...document.querySelectorAll(`#pvBoard .pcell[data-r="${t.dataset.r}"]`)].find(q=>q.dataset.x===t.dataset.x&&!q.textContent);
+        fb('pvFb','no',c.dataset.r!==t.dataset.r?`🤔 Энэ цифр ${t.dataset.r==='0'?'🥒 ногоон':'🍅 улаан'} мөрийнх.`:`🤔 Энэ ${t.dataset.x} нь ${right?CNAME[right.dataset.k]:'өөр'} оронд байна. Цэгээс тоолоорой!`)}};
+    t.addEventListener('pointermove',mv);t.addEventListener('pointerup',up);t.addEventListener('pointercancel',up)})}
+function cellAt(ev){const el=document.elementFromPoint(ev.clientX,ev.clientY);const c=el&&el.closest?el.closest('#pvBoard .pcell:not(.off)'):null;return c&&!c.textContent?c:null}
+$('pvZero').onclick=()=>{const z=[...document.querySelectorAll('#pvBoard .pcell[data-x="z"]')].filter(c=>!c.textContent);
+  if(!z.length){fb('pvFb','','Энэ сагсанд 0 нөхөх нүд үлдээгүй байна.');return}
+  z.forEach(c=>{c.textContent='0';c.classList.add('zero')});pvZeroDone=true;pvCheckDone()};
+$('pvNext').onclick=()=>{pvI=(pvI+1)%PV.length;pvLoad()};
+pvLoad();
+
+/* ================= Column machine ================= */
+const PLACE={'-3':'мянганы нэгийн','-2':'зууны нэгийн','-1':'аравны нэгийн','0':'нэгжийн','1':'аравтын','2':'зуутын'};
+const cap=s=>s.charAt(0).toUpperCase()+s.slice(1);
+const decs=s=>(s.split('.')[1]||'').length;
+function toU(s,d){const [i,f='']=s.split('.');return Number(i)*Math.pow(10,d)+(d?Number((f+'000').slice(0,d)):0)}
+function fmtU(u,d){if(!d)return String(u);const s=String(u).padStart(d+1,'0');return s.slice(0,-d)+'.'+s.slice(-d)}
+const trimN=s=>s.includes('.')?s.replace(/0+$/,'').replace(/\.$/,''):s;
+function prep(A,B,op){
+  const dA=decs(A),dB=decs(B),d=Math.max(dA,dB);
+  const ua=toU(A,d),ub=toU(B,d),ur=op==='+'?ua+ub:ua-ub;
+  const ds=u=>String(u).padStart(d+1,'0');
+  const W=Math.max(ds(ua).length,ds(ub).length,ds(ur).length);
+  const arr=u=>[...ds(u).padStart(W,' ')].reverse().map(c=>c===' '?null:+c);
+  const a=arr(ua),b=arr(ub),res=arr(ur);const steps=[];let c=0;
+  for(let r=0;r<W;r++){const x=a[r]==null?0:a[r],y=b[r]==null?0:b[r],pl=cap(PLACE[r-d]||'дараагийн');
+    if(op==='+'){const s=x+y+c;let t;
+      if(a[r]==null&&b[r]==null)t=`${pl} орон: шилжүүлсэн <b>1</b>-ийг бичнэ.`;
+      else t=`${pl} орон: ${x} + ${y}${c?' + <b>1</b>':''} = ${s}`+(s>=10?` → <b>${s%10}</b>-ийг бичээд, <b>1</b>-ийг ${PLACE[r+1-d]||'дараагийн'} оронд шилжүүлнэ.`:` → <b>${s}</b>-ийг бичнэ.`);
+      if(r===d-1)t+=' Дараа нь цэгээ буулгана.';
+      steps.push({r,carry:s>=10,txt:t});c=s>=10?1:0}
+    else{let tp=x-c,bo=0;if(tp<y){tp+=10;bo=1}
+      let t=`${pl} орон: `;
+      if(c&&x===0)t+=`0 нь баруун хөршдөө зээлүүлэхийн тулд өөрөө зүүнээсээ зээлж <b>9</b> болно. 9 − ${y} = <b>${tp-y}</b>.`;
+      else{const base=x-c;t+=c?`${x} нь 1-ийг зээлүүлж ${base} болсон. `:'';
+        t+=bo?`${base} − ${y} болохгүй → зүүнээс 1 зээлж <b>${tp}</b> болгоно: ${tp} − ${y} = <b>${tp-y}</b>.`:`${base} − ${y} = <b>${tp-y}</b>.`}
+      if(res[r]==null)t+=' Тэргүүн 0-ийг бичихгүй.';
+      steps.push({r,bin:c,bout:bo,top:tp,txt:t});c=bo}}
+  return{A,B,op,d,W,a,b,res,phA:d-dA,phB:d-dB,steps,ans:trimN(fmtU(ur,d))}}
+function helpers(P,step){const h={},s={};
+  for(let k=0;k<step&&k<P.steps.length;k++){const q=P.steps[k];
+    if(P.op==='+'){if(q.carry)h[q.r+1]='1'}
+    else{if(q.bin||q.bout){h[q.r]=String(q.top);s[q.r]=true}
+      if(q.bout){const nx=P.a[q.r+1]==null?0:P.a[q.r+1];h[q.r+1]=String(nx===0?9:nx-1);s[q.r+1]=true}}}
+  return{h,s}}
+function colHTML(P,step){const H=helpers(P,step);const cols=[];for(let r=P.W-1;r>=0;r--){cols.push(r);if(r===P.d&&P.d>0)cols.push('pt')}
+  const cur=step-1;let h=`<div class="cb" style="grid-template-columns:40px ${cols.map(c=>c==='pt'?'22px':'var(--cw)').join(' ')}">`;
+  const cell=(cls,t)=>`<div class="cc ${cls}">${t}</div>`;
+  h+=cell('hp','');cols.forEach(c=>{h+=c==='pt'?cell('hp',''):cell('hp',H.h[c]!=null?H.h[c]:'')});
+  const rowD=(arr,ph,strike)=>{cols.forEach(c=>{if(c==='pt'){h+=cell('pt','<i></i>');return}const v=arr[c];
+    h+=cell('dg'+(c<ph&&v!=null?' ph':'')+(strike&&H.s[c]?' st':'')+(c===cur?' cur':''),v==null?'':v)})};
+  h+=cell('sg','');rowD(P.a,P.phA,true);
+  h+=cell('sg',P.op==='+'?'+':'−');rowD(P.b,P.phB,false);
+  h+=`<div class="ln" style="grid-column:1/${cols.length+2}"></div>`;
+  h+=cell('sg','');cols.forEach(c=>{if(c==='pt'){h+=cell('pt','<i></i>');return}const v=(c<step&&P.res[c]!=null)?P.res[c]:'';h+=cell('dg res'+(c===cur?' cur':''),v)});
+  return h+'</div>'}
+function genN(iMax,d){let s=String(rint(0,iMax));if(d){s+='.';for(let k=0;k<d;k++)s+=k===d-1?rint(1,9):rint(0,9)}return s}
+function Machine(o){
+  let P=null,step=0,timer=null;
+  const render=()=>{$(o.board).innerHTML=colHTML(P,step)};
+  function load(A,B){clearInterval(timer);P=prep(A,B,o.op);step=0;render();
+    $(o.txt).innerHTML=`Цэгүүд харалдаа, хоосон оронд <span style="color:var(--leaf)">0</span> нөхсөн. ▶ дарж <b>баруун</b> захаас эхэлнэ.`;
+    $(o.q).textContent=A+' '+(o.op==='+'?'+':'−')+' '+B;$(o.inp).value='';$(o.inp).className='num';fb(o.fb,'','');if(o.story)o.story(A,B)}
+  function next(){if(step>=P.steps.length)return false;step++;render();$(o.txt).innerHTML=P.steps[step-1].txt+(step===P.steps.length?` ✅ Хариу: <b>${P.ans}</b>`:'');return true}
+  $(o.nextBtn).onclick=()=>{clearInterval(timer);next()};
+  $(o.allBtn).onclick=()=>{clearInterval(timer);timer=setInterval(()=>{if(!next())clearInterval(timer)},900)};
+  $(o.resetBtn).onclick=()=>load(P.A,P.B);
+  $(o.chk).onclick=()=>{const i=$(o.inp);if(numEq(i.value,P.ans)){i.className='num ok';fb(o.fb,'ok','🎉 Зөв! '+P.A+(o.op==='+'?' + ':' − ')+P.B+' = '+P.ans);mark(o.key)}
+    else{i.className='num no';fb(o.fb,'no','🤔 Цэгүүдээ харалдаа тавьсан уу? ▶ товчоор алхам алхмаар шалгаарай.')}};
+  document.querySelectorAll('#'+o.chips+' .chip').forEach(ch=>ch.onclick=()=>{document.querySelectorAll('#'+o.chips+' .chip').forEach(x=>x.classList.toggle('on',x===ch));
+    if(ch.dataset.r){let A,B;do{A=genN(o.op==='+'?9:12,rint(1,2));B=genN(9,rint(1,2))}while(Number(A)===Number(B));if(o.op==='−'&&Number(A)<Number(B))[A,B]=[B,A];load(A,B)}
+    else load(ch.dataset.a,ch.dataset.b)});
+  load(o.A,o.B)}
+Machine({op:'+',A:'2.8',B:'1.15',board:'addBoard',txt:'addTxt',q:'addQ',inp:'addIn',fb:'addFb',chk:'addChk',nextBtn:'addNext',allBtn:'addAll',resetBtn:'addReset',chips:'addChips',key:'add'});
+Machine({op:'−',A:'2.8',B:'1.15',board:'subBoard',txt:'subTxt',q:'subQ',inp:'subIn',fb:'subFb',chk:'subChk',nextBtn:'subNext',allBtn:'subAll',resetBtn:'subReset',chips:'subChips',key:'sub',
+  story:(A,B)=>{$('subStory').textContent=A==='2.8'&&B==='1.15'?'Өргөст хэмх улаан лоолиос хэдэн кг-аар их вэ?':A==='5'&&B==='2.35'?'Худалдан авагч 5 мян.₮ өгөөд 2.35 мян.₮-ийн бараа авлаа. Хариулт хэд вэ?':'Зөрүүг ол:'}});
+
+/* ================= Budget ================= */
+const ITEMS=[['🍞','Талх',125],['🥛','Сүү',240],['🥚','Өндөг',360],['🍎','Алим',215],['🥕','Лууван',85],['🥔','Төмс',170],['🥬','Байцаа',135],['🍅','Улаан лооль',295],['🥒','Өргөст хэмх',180]];
+let bLv=1;const cart=new Set();
+const BUD=()=>bLv===1?500:1000;
+(()=>{ITEMS.forEach((it,i)=>{const d=document.createElement('div');d.className='item';d.innerHTML=`<div class="em">${it[0]}</div><div class="nm">${it[1]}</div><span class="pr">${trimN(f2(it[2]))}</span>`;
+  d.onclick=()=>{cart.has(i)?cart.delete(i):cart.add(i);d.classList.toggle('in',cart.has(i));bUpd()};$('shelf').appendChild(d)})})();
+function bTotal(){let s=0;cart.forEach(i=>s+=ITEMS[i][2]);return s}
+function bUpd(){const t=bTotal(),B=BUD();$('bBud').textContent=f2(B);
+  $('bTot').textContent=bLv===1?f2(t):'??.??';$('bRem').textContent=bLv===1?f2(B-t):'??.??';
+  $('bTot').parentElement.style.color=bLv===1&&t>B?'#ff8f87':'';
+  $('cartList').innerHTML=cart.size?[...cart].map(i=>`<div><span>${ITEMS[i][0]} ${ITEMS[i][1]}</span><span>${f2(ITEMS[i][2])}</span></div>`).join(''):'<span class="muted">👆 Тавиураас бараа сонго</span>';
+  $('bRule').textContent=bLv===1?'≥ 3 бараа, ≤ 5.00':'≥ 4 бараа, 9.50 – 10.00, нийлбэрээ өөрөө бод!';fb('bFb','','')}
+function bSetLv(l){bLv=l;$('bLv1').classList.toggle('on',l===1);$('bLv3').classList.toggle('on',l===3);$('bHard').style.display=l===3?'flex':'none';$('bTotIn').value='';$('bRemIn').value='';bUpd()}
+$('bLv1').onclick=()=>bSetLv(1);$('bLv3').onclick=()=>bSetLv(3);
+$('bClr').onclick=()=>{cart.clear();document.querySelectorAll('.item').forEach(d=>d.classList.remove('in'));bUpd()};
+$('bPay').onclick=()=>{const t=bTotal(),B=BUD();
+  if(bLv===1){if(cart.size<3)return fb('bFb','no','🛒 Дор хаяж 3 бараа сонгоорой.');if(t>B)return fb('bFb','no',`💸 ${f2(t)} &gt; 5.00 — төсөв хэтэрлээ! Нэг бараагаа буцаа.`);
+    fb('bFb','ok',`🎉 Төлөгдлөө! Хариулт: 5.00 − ${f2(t)} = ${f2(B-t)} мян.₮`);mark('bud');return}
+  if(cart.size<4)return fb('bFb','no','🛒 Дор хаяж 4 бараа сонгоорой.');
+  if(!numEq($('bTotIn').value,t/100)){$('bTotIn').className='num no';return fb('bFb','no','🤔 Нийлбэрээ дахин бодоорой (цэгийн доор цэг!).')}
+  $('bTotIn').className='num ok';
+  if(!numEq($('bRemIn').value,(B-t)/100)){$('bRemIn').className='num no';return fb('bFb','no',t>B?'💸 Нийлбэр 10-аас их — төсөв хэтэрсэн! Бараагаа өөрчил.':'🤔 Хариултаа дахин бод: 10.00 − нийт.')}
+  $('bRemIn').className='num ok';$('bTot').textContent=f2(t);$('bRem').textContent=f2(B-t);
+  if(t<950)return fb('bFb','no',`👍 Бодолт зөв! Гэхдээ ${f2(t)} &lt; 9.50 — 10-д илүү ойртуулж чадах уу?`);
+  fb('bFb','ok',`🏆 Төгс! ${f2(t)} мян.₮, хариулт ${f2(B-t)}.`);mark('bud')};
+bUpd();
+
+/* ================= Estimation ================= */
+let eLv=1,eCur=null,eScore=0;
+function eGen(){let A,B,op=Math.random()<.5?'+':'−';
+  const mk=()=>{let s;do{s=eLv===1?genN(9,1):genN(rint(1,15),rint(2,3))}while(Math.abs(Number(s)%1-.5)<0.06||Number(s)<1);return s};
+  do{A=mk();B=mk()}while(Number(A)===Number(B));if(op==='−'&&Number(A)<Number(B))[A,B]=[B,A];
+  const ra=Math.round(Number(A)),rb=Math.round(Number(B)),est=op==='+'?ra+rb:ra-rb;
+  const P=prep(A,B,op);eCur={A,B,op,est,ans:P.ans,ra,rb};
+  $('eQ').innerHTML=`<span class="t">${A}</span>${op}<span class="t">${B}</span>`;
+  const o=new Set([est]);const cand=shuffle([est+1,est-1,est+2,est-2,est+10]).filter(x=>x>=0);while(o.size<3)o.add(cand.shift());
+  $('eOpts').innerHTML='';shuffle([...o]).forEach(v=>{const b=document.createElement('button');b.className='btn ghost';b.textContent='≈ '+v;
+    b.onclick=()=>{if(v===est){b.classList.add('on');fb('eFb','ok',`✓ ${A} ≈ ${ra}, ${B} ≈ ${rb} → ≈ ${est}. Одоо яг хариуг бод!`);$('eIn').disabled=false;$('eChk').disabled=false;$('eIn').focus()}
+      else{b.classList.remove('shake');void b.offsetWidth;b.classList.add('shake');fb('eFb','no','🤔 Тоо бүрийг хамгийн ойрын бүхэл тоо руу дугуйл.')}};$('eOpts').appendChild(b)});
+  $('eIn').value='';$('eIn').className='num';$('eIn').disabled=true;$('eChk').disabled=true;fb('eFb','','')}
+$('eChk').onclick=()=>{const v=numOf($('eIn').value);if(numEq($('eIn').value,eCur.ans)){$('eIn').className='num ok';eScore++;$('eScore').textContent=eScore;
+    fb('eFb','ok',`🎉 ${eCur.ans} — тоймлолт ${eCur.est}-д ойрхон, үнэмшилтэй! ✓`);confetti(30);setTimeout(()=>{if(cur===6)eGen()},2200)}
+  else{$('eIn').className='num no';fb('eFb','no',v!==null&&Math.abs(v-eCur.est)>1.5?`😮 ${v} нь тоймлолт ${eCur.est}-аас хэт хол! Цэгээ шалга.`:'🤔 Ойрхон боловч буруу. Баганаар дахин бод.')}};
+$('eNew').onclick=eGen;
+$('eLv1').onclick=()=>{eLv=1;$('eLv1').classList.add('on');$('eLv3').classList.remove('on');eGen()};
+$('eLv3').onclick=()=>{eLv=3;$('eLv3').classList.add('on');$('eLv1').classList.remove('on');eGen()};
+eGen();
+const CHK=[['2.8 + 1.15 = 1.43',false,'≈ 3 + 1 = 4 байх ёстой! Цэгийг харалдаа тавиагүй. Зөв нь 3.95'],['4.5 + 0.32 = 4.82',true,'≈ 5 + 0 = 5 → 4.82 үнэмшилтэй ✓'],['9.8 − 3.6 = 6.2',true,'≈ 10 − 4 = 6 → 6.2 ✓'],['3.7 + 5.3 = 8.1',false,'≈ 4 + 5 = 9. Зөв нь 9.0 = 9']];
+let chkOk=0;
+CHK.forEach(([t,ok,ex])=>{const d=document.createElement('div');d.className='rcpt';d.innerHTML=`<span>${t}</span><span class="bt"><button class="btn sm">✓</button><button class="btn red sm">✗</button></span>`;
+  const [y,n]=d.querySelectorAll('button');const ans=v=>{if(d.dataset.done)return;if(v===ok){d.dataset.done=1;d.classList.add(ok?'ok':'no');d.querySelector('.bt').innerHTML=ok?'✅':'❌';chkOk++;fb('chkFb','ok',ex);if(chkOk===CHK.length){fb('chkFb','ok','🏆 Та бүх алдааг илрүүллээ! Тоймлолт — кассчны нууц зэвсэг.');confetti(60)}}
+    else{d.classList.remove('shake');void d.offsetWidth;d.classList.add('shake');fb('chkFb','no','🤔 Эхлээд тоо бүрийг бүхэл тоо руу дугуйлж тоймлоорой.')}};
+  y.onclick=()=>ans(true);n.onclick=()=>ans(false);$('chkList').appendChild(d)});
+
+/* ================= Pairs ================= */
+const PAIRS={1:{t:10,n:['7.5','4.1','4.7','8.5','2.4','1.1','7.8','3.3','5.9','1.5','7.6','8.9','2.5','6.7','2.2','5.3']},3:{t:1,n:['0.13','0.36','0.05','0.09','0.15','0.44','0.31','0.22','0.95','0.87','0.85','0.64','0.91','0.78','0.56','0.69']}};
+const PCOL=['#2f9e44','#e03b2b','#f08c00','#1c7ed6','#ae3ec9','#0ca678','#d6336c','#5c940d'];
+let pLv=1,pSel=null,pFound=0;
+function pLoad(){const P=PAIRS[pLv];pSel=null;pFound=0;$('pCnt').textContent=0;fb('pFb','','Нийлбэр нь <b>'+P.t+'</b> болох хоёр тоог дараалан дар.');$('pairs').innerHTML='';
+  P.n.forEach(v=>{const b=document.createElement('button');b.className='pc';b.textContent=v;b.onclick=()=>{if(b.classList.contains('done'))return;
+    if(!pSel){pSel=b;b.classList.add('sel');return}if(pSel===b){b.classList.remove('sel');pSel=null;return}
+    const s=prep(pSel.textContent,v,'+').ans;const a=pSel;a.classList.remove('sel');pSel=null;
+    if(Number(s)===P.t){[a,b].forEach(x=>{x.classList.add('done');x.style.background=PCOL[pFound%8]});pFound++;$('pCnt').textContent=pFound;fb('pFb','ok',`✓ ${a.textContent} + ${v} = ${P.t}`);if(pFound===8){fb('pFb','ok','🏆 Бүх 8 хосыг оллоо!');confetti(90)}}
+    else{[a,b].forEach(x=>{x.classList.remove('shake');void x.offsetWidth;x.classList.add('shake')});fb('pFb','no',`🤔 ${a.textContent} + ${v} = ${trimN(s)}, ${P.t} биш.`)}};$('pairs').appendChild(b)})}
+$('pLv1').onclick=()=>{pLv=1;$('pLv1').classList.add('on');$('pLv3').classList.remove('on');pLoad()};
+$('pLv3').onclick=()=>{pLv=3;$('pLv3').classList.add('on');$('pLv1').classList.remove('on');pLoad()};
+pLoad();
+$('rChk').onclick=()=>{const a=numEq($('rTot').value,29.82),b=numEq($('rDif').value,2.33);$('rTot').className='num '+(a?'ok':'no');$('rDif').className='num '+(b?'ok':'no');
+  if(a&&b){fb('rFb','ok','🏆 Зөв! Нийт 29.82 км, зөрүү 4.2 − 1.87 = 2.33 км.');confetti(70)}else fb('rFb','no','🤔 '+(a?'':'Нийлбэрийг хэсэгчлэн нэм. ')+(b?'':'Хамгийн их, бага тоог ол.'))};
+$('rHint').onclick=()=>fb('rFb','','💡 Хос болгож нэм: 2.5 + 2.42 + ..., 3 + 4 = 7. Хамгийн хол = 4.2 (4.20), хамгийн ойр = 1.87.');
+
+/* ================= Receipt exit ================= */
+$('exChk').onclick=()=>{let n=0;document.querySelectorAll('#receipt input').forEach(i=>{const ok=numEq(i.value,i.dataset.ex);if(ok)n++;i.className='num '+(i.value.trim()?(ok?'ok':'no'):'');i.nextElementSibling.textContent=i.value.trim()?(ok?'✓':'✗'):''});
+  $('exScore').textContent=n+' / 4';$('stamp').classList.toggle('show',n===4);if(n===4)confetti(110)};
+
+/* ================= Stars ================= */
+(()=>{const b=[...document.querySelectorAll('#stars3 button')];const set=n=>{b.forEach((x,i)=>x.classList.toggle('on',i<n));store.set('m_dec_addsub_stars',n)};b.forEach((x,i)=>x.onclick=()=>{set(i+1);if(i===2)confetti(60)});set(+(store.get('m_dec_addsub_stars')||0))})();
+
+/* ================= Confetti (fruits + price tags) ================= */
+const cf=$('confetti'),cfx=cf.getContext('2d');let parts=[],cRun=false;
+function confetti(n){cf.width=innerWidth;cf.height=innerHeight;const cols=['#e03b2b','#ffd43b','#2f9e44','#f08c00','#ff6b6b','#94d82d'];
+  for(let i=0;i<n;i++)parts.push({x:innerWidth/2+rnd(-160,160),y:innerHeight*.45,vx:rnd(-7,7),vy:-rnd(4,18),s:rnd(8,14),c:cols[i%6],r:rnd(0,6),k:i%3,life:120});
+  if(!cRun){cRun=true;requestAnimationFrame(cStep)}}
+function cStep(){cfx.clearRect(0,0,cf.width,cf.height);parts.forEach(p=>{p.vy+=.4;p.x+=p.vx;p.y+=p.vy;p.r+=.12;p.life--;cfx.save();cfx.translate(p.x,p.y);cfx.rotate(p.r);
+    if(p.k===2){cfx.fillStyle='#ffd43b';cfx.beginPath();cfx.moveTo(-p.s,-p.s/2);cfx.lineTo(p.s*.6,-p.s/2);cfx.lineTo(p.s,0);cfx.lineTo(p.s*.6,p.s/2);cfx.lineTo(-p.s,p.s/2);cfx.closePath();cfx.fill();cfx.fillStyle='#fff';cfx.beginPath();cfx.arc(-p.s*.6,0,p.s/6,0,7);cfx.fill()}
+    else{cfx.fillStyle=p.c;cfx.beginPath();cfx.arc(0,0,p.s/2,0,7);cfx.fill();cfx.fillStyle='#2f9e44';cfx.beginPath();cfx.ellipse(p.s*.2,-p.s/2,p.s/4,p.s/8,-.5,0,7);cfx.fill()}
+    cfx.restore()});
+  parts=parts.filter(p=>p.life>0&&p.y<cf.height+20);if(parts.length)requestAnimationFrame(cStep);else{cRun=false;cfx.clearRect(0,0,cf.width,cf.height)}}
+
+go(0);
+</script>
+</body>
+</html>
